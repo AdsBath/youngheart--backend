@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CareerRoutes = void 0;
+const express_1 = require("express");
+const career_controller_1 = require("./career.controller");
+const router = (0, express_1.Router)();
+router.get('/', career_controller_1.CareerController.getAllFromDB);
+router.get('/frontend', career_controller_1.CareerController.getAllForFrontend);
+router.get('/:id', career_controller_1.CareerController.getByIdFromDB);
+router.post('/add', career_controller_1.CareerController.insertIntoDB);
+router.patch('/:id', career_controller_1.CareerController.updateOneInDB);
+router.delete('/:id', career_controller_1.CareerController.deleteByIdFromDB);
+exports.CareerRoutes = router;

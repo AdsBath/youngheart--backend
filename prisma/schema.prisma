@@ -1,0 +1,687 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Coupon {
+  id           String        @id @default(uuid())
+  title        String
+  code         String        @unique
+  price        Float
+  priceType    PriceType
+  cappedPrice  Float?
+  minSpent     Float
+  usageLimit   Int
+  limitPerUser Int
+  startTime    DateTime
+  endTime      DateTime
+  status       String
+  productId    String?
+  timesUsed    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  product      Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderCoupons OrderCoupon[]
+  userCoupons  UserCoupon[]
+
+  @@map("coupons")
+}
+
+model UserCoupon {
+  id       String @id @default(uuid())
+  userId   String
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+
+  @@map("user_coupons")
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  phone              String?
+  email              String?
+  password           String?
+  firstName          String?
+  lastName           String?
+  displayName        String?
+  image              String?
+  role               Role                @default(GUEST)
+  isUser             Boolean             @default(false)
+  sessionId          String              @unique
+  loginCount         Int                 @default(1)
+  lastLogin          DateTime?           @updatedAt
+  status             Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  setPassword        Boolean             @default(false)
+  abandonedCarts     AbandonedCart?
+  addresses          Address[]
+  blogs              Blog[]
+  carts              Cart[]
+  orderNotifications OrderNotification[]
+  orders             Order[]
+  productReview      ProductReview[]
+  userCoupons        UserCoupon[]
+  userPermissions    UserPermission[]
+  wishlists          Wishlist[]
+
+  @@map("users")
+}
+
+model UserPermission {
+  id           String     @id @default(uuid())
+  userId       String
+  permissionId String
+  assignedBy   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+
+  @@map("user_permissions")
+}
+
+model Permission {
+  id              String           @id @default(uuid())
+  permissionName  String           @unique
+  status          Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userPermissions UserPermission[]
+
+  @@map("permissions")
+}
+
+model AbandonedCart {
+  id                 String              @id @default(uuid())
+  userId             String              @unique
+  firstName          String?
+  lastName           String?
+  email              String?
+  phone              String?
+  district           String?
+  apartment          String?
+  status             Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  address            String?
+  abandonedCartItems AbandonedCartItem[]
+  user               User                @relation(fields: [userId], references: [id])
+
+  @@map("abandoned_carts")
+}
+
+model AbandonedCartItem {
+  id              String        @id @default(uuid())
+  quantity        Int
+  color           String
+  size            String
+  price           Float?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  abandonedCartId String
+  productId       String
+  abandonedCart   AbandonedCart @relation(fields: [abandonedCartId], references: [id])
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("abandoned_cart_items")
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  houseNumber String?
+  apartment   String?
+  city        String?
+  district    String?
+  zip         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  address     String?
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("addresses")
+}
+
+model Category {
+  id              String     @id @default(uuid())
+  title           String
+  slug            String     @unique
+  description     String?
+  featured        Boolean    @default(false)
+  showInFooter    Boolean    @default(false)
+  status          Boolean    @default(false)
+  metaTitle       String?
+  metaDescription String?
+  image           String?
+  parentId        String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  elementor       Boolean    @default(false)
+  elementorImage  String?
+  BannerAd        BannerAd[]
+  parent          Category?  @relation("ParentChild", fields: [parentId], references: [id])
+  children        Category[] @relation("ParentChild")
+  products        Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                        String                     @id @default(uuid())
+  name                      String
+  slug                      String                     @unique
+  thumbnail                 String
+  description               String
+  shortDescription          String
+  images                    String[]                   @default([])
+  isAvailable               Availablety                @default(outOfStock)
+  status                    Status                     @default(draft)
+  metaTitle                 String?
+  metaDescription           String?
+  shippingRuleId            String?
+  categoryId                String
+  bundleDiscountId          String?
+  variations                Json[]
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  productCollectionId       String?
+  careInstructions          String?
+  productDetails            String?
+  productFaq                String?
+  sku                       String                     @unique
+  brandId                   String?
+  showInOffer               Boolean                    @default(false)
+  showInHomeCollection      Boolean                    @default(false)
+  price                     String
+  discountPrice             String?
+  stock                     String
+  abandonedCartItems        AbandonedCartItem[]
+  cartItems                 CartItem[]
+  coupons                   Coupon[]
+  inventories               Inventory[]
+  orderItems                OrderItem[]
+  features                  ProductFeature[]
+  productProductCollections ProductProductCollection[]
+  productReviews            ProductReview[]
+  brand                     Brand?                     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  bundleDiscount            BundleDiscount?            @relation(fields: [bundleDiscountId], references: [id], onDelete: Cascade)
+  category                  Category                   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  ProductCollection         ProductCollection?         @relation(fields: [productCollectionId], references: [id], onDelete: Cascade)
+  shippingRules             ShippingRule?              @relation(fields: [shippingRuleId], references: [id], onDelete: Cascade)
+  wishlists                 Wishlist[]
+
+  @@map("products")
+}
+
+model Feature {
+  id           String           @id @default(uuid())
+  name         String
+  slug         String           @unique
+  displayOrder Int
+  status       Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  products     ProductFeature[]
+
+  @@map("features")
+}
+
+model ProductFeature {
+  id        String   @id @default(uuid())
+  productId String
+  featureId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  feature   Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, featureId])
+  @@map("product_features")
+}
+
+model Wishlist {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@map("wishlists")
+}
+
+model Inventory {
+  id              String          @id @default(uuid())
+  currentQuantity String
+  productId       String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventoryNotes  InventoryNote[]
+
+  @@map("inventories")
+}
+
+model InventoryNote {
+  id                String    @id @default(uuid())
+  inventoryId       String
+  stockInQuantity   String?
+  restockInQuantity String?
+  stockInDate       DateTime?
+  restockDate       DateTime?
+  expireDate        DateTime?
+  supplierName      String?
+  warehouseLocation String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  inventories       Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@map("inventorory_notes")
+}
+
+model ProductProductCollection {
+  productId           String
+  productCollectionId String
+  productCollection   ProductCollection @relation(fields: [productCollectionId], references: [id])
+  product             Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([productId, productCollectionId])
+  @@map("product_product_collections")
+}
+
+model ProductAttribute {
+  id        String          @id @default(uuid())
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  items     AttributeItem[]
+
+  @@map("product_attributes")
+}
+
+model AttributeItem {
+  id          String           @id @default(uuid())
+  name        String
+  attributeId String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  attribute   ProductAttribute @relation(fields: [attributeId], references: [id])
+
+  @@map("attribute_items")
+}
+
+model ProductCollection {
+  id                        String                     @id @default(uuid())
+  name                      String
+  status                    Boolean                    @default(false)
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  displayOrder              Int
+  slug                      String                     @unique
+  imageUrl                  String
+  productProductCollections ProductProductCollection[]
+  products                  Product[]
+
+  @@map("product_collections")
+}
+
+model BundleDiscount {
+  id           String        @id @default(uuid())
+  name         String
+  free         String?
+  buy          String?
+  image        String?
+  updatedAt    DateTime      @updatedAt
+  status       Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  bgImage      String?
+  isActive     Boolean       @default(false)
+  slug         String        @unique
+  orderBundles OrderBundle[]
+  products     Product[]
+
+  @@map("bundle_discounts")
+}
+
+model DiscountBanner {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  logo      String
+  banner    String
+  bgImage   String
+  status    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("discount_banners")
+}
+
+model Refund {
+  id        String   @id @default(uuid())
+  reason    String
+  status    String
+  orderId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  @@map("refunds")
+}
+
+model Brand {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  slug         String    @unique
+  displayOrder Int
+  status       Boolean   @default(false)
+  imageUrl     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isActive     Boolean   @default(false)
+  products     Product[]
+}
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  review    String
+  rating    String
+  productId String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("product_reviews")
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String?
+  sessionId String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  cartItems CartItem[]
+  user      User?      @relation(fields: [userId], references: [id])
+
+  @@map("carts")
+}
+
+model CartItem {
+  id              String   @id @default(uuid())
+  quantity        Int
+  color           String
+  size            String
+  price           Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  cartId          String
+  productId       String
+  discount        Int?
+  image           String?
+  discountAmmount Float?
+  name            String?
+  cart            Cart     @relation(fields: [cartId], references: [id])
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("cart_items")
+}
+
+model Order {
+  id                     String              @id @default(uuid())
+  orderId                String
+  totalAmount            Float
+  discount               Int?
+  status                 OrderStatus         @default(PENDING)
+  shipToDifferentAddress String?
+  billingAddress         String
+  paymentMethod          String
+  shippingCharge         Int
+  isAgree                Boolean             @default(false)
+  notes                  String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  userId                 String
+  shippingRuleId         String?
+  discountAmmount        Float?
+  orderNotifications     OrderNotification[]
+  orderBundles           OrderBundle[]
+  orderCoupons           OrderCoupon[]
+  orderItems             OrderItem[]
+  shippingRule           ShippingRule?       @relation(fields: [shippingRuleId], references: [id])
+  user                   User                @relation(fields: [userId], references: [id])
+  refunds                Refund[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  quantity        Int
+  color           String
+  size            String
+  price           Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  orderId         String
+  productId       String
+  productImage    String?
+  discount        Int?
+  discountAmmount Float?
+  productName     String?
+  productSku      String?
+  order           Order    @relation(fields: [orderId], references: [id])
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model OrderCoupon {
+  id       String @id @default(uuid())
+  orderId  String
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+  order    Order  @relation(fields: [orderId], references: [id])
+
+  @@map("order_coupons")
+}
+
+model OrderBundle {
+  id           String         @id @default(uuid())
+  orderId      String
+  bundleDealId String
+  bundleDeal   BundleDiscount @relation(fields: [bundleDealId], references: [id])
+  order        Order          @relation(fields: [orderId], references: [id])
+
+  @@map("order_bundles")
+}
+
+model ShippingRule {
+  id            String    @id @default(uuid())
+  name          String
+  minOrderValue Float?
+  shippingCost  Float
+  status        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+  products      Product[]
+
+  @@map("shipping_rules")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+model OrderNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  orderId   String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Order?   @relation(fields: [orderId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("order-notifications")
+}
+
+model Banner {
+  id           String   @id @default(uuid())
+  title        String?
+  description  String?
+  imageUrl     String
+  linkUrl      String?
+  displayOrder Int
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("banners")
+}
+
+model BannerAd {
+  id           String   @id @default(uuid())
+  title        String?
+  description  String?
+  imageUrl     String
+  categoryId   String
+  displayOrder Int
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  category     Category @relation(fields: [categoryId], references: [id])
+
+  @@map("banner_ads")
+}
+
+model Page {
+  id               String   @id @default(uuid())
+  title            String
+  shortDescription String?
+  content          String
+  isActive         Boolean  @default(false)
+  displayOrder     Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("pages")
+}
+
+model Career {
+  id               String   @id @default(uuid())
+  title            String
+  shortDescription String
+  content          String
+  applyUrl         String
+  isActive         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("careers")
+}
+
+model Application {
+  id             String   @id @default(uuid())
+  designation    String
+  name           String
+  email          String
+  phone          String
+  expectedSalary Float
+  message        String?
+  resume         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("applications")
+}
+
+model Blog {
+  id               String   @id @default(uuid())
+  title            String
+  slug             String   @unique
+  thumbnail        String
+  shortDescription String?
+  content          String
+  isActive         Boolean  @default(false)
+  meta_title       String
+  meta_description String
+  authorId         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  author           User     @relation(fields: [authorId], references: [id])
+
+  @@map("blogs")
+}
+
+model CustomDesign {
+  id                String   @id @default(uuid())
+  wantCustomDesign  String
+  designType        String?
+  productDesign     Json?
+  numberOfDesigns   String?
+  deliveryDate      String?
+  hasImage          String?
+  designImage       String?
+  firstName         String
+  lastName          String
+  phone             String
+  email             String?
+  additionalDetails String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("custom_designs")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKING
+  DELIVERED
+  CANCELED
+  EXCHANGE
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+  GUEST
+  EMPLOYEE
+  MANAGER
+}
+
+enum Availablety {
+  inStock
+  outOfStock
+  preOrder
+}
+
+enum Status {
+  draft
+  archived
+  published
+}
+
+enum PriceType {
+  percentage
+  fixed
+}

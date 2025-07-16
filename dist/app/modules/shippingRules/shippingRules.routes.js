@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ShippingRulesRoutes = void 0;
+const express_1 = require("express");
+const shippingRules_controller_1 = require("./shippingRules.controller");
+const router = (0, express_1.Router)();
+router.get('/', shippingRules_controller_1.ShippingRulesController.getAllFromDB);
+router.get('/:id', shippingRules_controller_1.ShippingRulesController.getByIdFromDB);
+router.post('/add', shippingRules_controller_1.ShippingRulesController.insertIntoDB);
+router.patch('/:id', shippingRules_controller_1.ShippingRulesController.updateOneInDB);
+router.delete('/:id', shippingRules_controller_1.ShippingRulesController.deleteByIdFromDB);
+router.delete('/delete/delete-many', shippingRules_controller_1.ShippingRulesController.deleteMultiple);
+exports.ShippingRulesRoutes = router;

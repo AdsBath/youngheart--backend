@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BannerAdRoutes = void 0;
+const express_1 = require("express");
+const bannerAd_controller_1 = require("./bannerAd.controller");
+const router = (0, express_1.Router)();
+router.get('/', bannerAd_controller_1.BannerAdController.getAllFromDB);
+router.get('/frontend', bannerAd_controller_1.BannerAdController.getAllForFrontend);
+router.get('/:id', bannerAd_controller_1.BannerAdController.getByIdFromDB);
+router.post('/add', bannerAd_controller_1.BannerAdController.insertIntoDB);
+router.patch('/:id', bannerAd_controller_1.BannerAdController.updateOneInDB);
+router.delete('/:id', bannerAd_controller_1.BannerAdController.deleteByIdFromDB);
+exports.BannerAdRoutes = router;
