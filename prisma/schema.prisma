@@ -150,25 +150,27 @@ model Address {
 }
 
 model Category {
-  id              String     @id @default(uuid())
-  title           String
-  slug            String     @unique
-  description     String?
-  featured        Boolean    @default(false)
-  showInFooter    Boolean    @default(false)
-  status          Boolean    @default(false)
-  metaTitle       String?
-  metaDescription String?
-  image           String?
-  parentId        String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  elementor       Boolean    @default(false)
-  elementorImage  String?
-  BannerAd        BannerAd[]
-  parent          Category?  @relation("ParentChild", fields: [parentId], references: [id])
-  children        Category[] @relation("ParentChild")
-  products        Product[]
+  id                 String              @id @default(uuid())
+  title              String
+  slug               String              @unique
+  description        String?
+  featured           Boolean             @default(false)
+  showInFooter       Boolean             @default(false)
+  status             Boolean             @default(false)
+  metaTitle          String?
+  metaDescription    String?
+  image              String?
+  parentId           String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  elementor          Boolean             @default(false)
+  elementorImage     String?
+  BannerAd           BannerAd[]
+  parent             Category?           @relation("ParentChild", fields: [parentId], references: [id])
+  children           Category[]          @relation("ParentChild")
+  products           Product[]
+  productCollection  ProductCollection[] @relation("ProductCollectionCategory")
+  productCollection2 ProductCollection[] @relation("ProductCollectionCategory2")
 
   @@map("categories")
 }
@@ -317,14 +319,22 @@ model AttributeItem {
 }
 
 model ProductCollection {
-  id                        String                     @id @default(uuid())
-  name                      String
-  status                    Boolean                    @default(false)
-  createdAt                 DateTime                   @default(now())
-  updatedAt                 DateTime                   @updatedAt
-  displayOrder              Int
-  slug                      String                     @unique
-  imageUrl                  String
+  id           String    @id @default(uuid())
+  name         String
+  status       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  displayOrder Int
+  slug         String    @unique
+  imageUrl     String
+  imageUrl2    String?
+  title        String?
+  title2       String?
+  categoryId   String?
+  categoryId2  String?
+  category     Category? @relation("ProductCollectionCategory", fields: [categoryId], references: [id])
+  category2    Category? @relation("ProductCollectionCategory2", fields: [categoryId2], references: [id])
+
   productProductCollections ProductProductCollection[]
   products                  Product[]
 

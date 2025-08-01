@@ -64,6 +64,8 @@ const getAllFromDB = async (
     ...queryOptions,
     orderBy: { displayOrder: 'asc' },
     include: {
+      category: true,
+      category2: true,
       products: {
         orderBy: { createdAt: 'desc' },
         where: {
@@ -100,6 +102,8 @@ const getByIdFromDB = async (id: string): Promise<ProductCollection | null> => {
       id,
     },
     include: {
+      category: true,
+      category2: true,
       products: {
         orderBy: { createdAt: 'desc' },
       },
