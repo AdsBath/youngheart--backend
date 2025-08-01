@@ -9,7 +9,7 @@ import sendResponse from './shared/sendResponse';
 const app: Application = express();
 
 const allowedOrigins = [
-  'https://www.babukhusi.com',
+  'https://youngheart-frontend.vercel.app',
   'http://localhost:3000',
   'http://192.168.0.107:3000',
 ];
@@ -45,7 +45,7 @@ app.get('/', (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Yap Our Babu khusi server is running! 🚀',
+    message: 'Yap Our youngheart server is running! 🚀',
   });
 });
 
