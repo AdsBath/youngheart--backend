@@ -1,7 +1,7 @@
 {
-  "name": "youngheart--backend",
+  "name": "youngheart-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "YoungHeart Backend",
   "main": "src/server.ts",
   "scripts": {
     "start": "node dist/server.js",

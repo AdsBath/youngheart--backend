@@ -1,7 +1,7 @@
 import { Server } from 'http';
-// import { errorLogger, logger } from './shared/logger';
+
 import WebSocket from 'ws';
-import './app/listeners/notificationLiseners'; // Import the listener
+import './app/listeners/notificationLiseners';
 
 import app from './app';
 import config from './config';
@@ -16,45 +16,23 @@ async function bootstrap() {
 
   const wss = new WebSocket.Server({ server });
 
-  wss.on('connection', (ws, req) => {
-    console.log(
-      'Client connected to WebSocket from:',
-      req.socket.remoteAddress,
-    );
-
-    // Send a test message to confirm connection
-    ws.send(
-      JSON.stringify({
-        type: 'connectionTest',
-        message: 'WebSocket connection established successfully!',
-        timestamp: new Date().toISOString(),
-      }),
-    );
+  wss.on('connection', ws => {
+    console.log('Client connected to WebSocket');
 
     ws.on('close', () => {
       console.log('Client disconnected from WebSocket');
     });
 
-    ws.on('error', error => {
-      console.error('WebSocket error:', error);
-    });
-
     // Listen for notifications and send them to the connected client
     notificationEmitter.on('orderCreated', order => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(
-          JSON.stringify({
-            type: 'orderCreated',
-            message: `Your order #${order.id} has been created!`,
-            orderId: order.id,
-          }),
-        );
-      }
+      ws.send(
+        JSON.stringify({
+          type: 'orderCreated',
+          message: `Your order #${order.id} has been created!`,
+          orderId: order.id,
+        }),
+      );
     });
-  });
-
-  wss.on('error', error => {
-    console.error('WebSocket server error:', error);
   });
 
   const exitHandler = () => {

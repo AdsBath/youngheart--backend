@@ -32,6 +32,17 @@ import { WishlistRoutes } from '../modules/wishlist/wishlist.routes';
 
 const router = Router();
 
+// Notification check endpoint for polling fallback
+router.get('/api/notifications/check', (req, res) => {
+  // This is a simple endpoint to check if there are new notifications
+  // You can enhance this to actually check your database for new notifications
+  res.json({
+    hasNewNotifications: false,
+    message: 'No new notifications',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 const moduleRoutes = [
   {
     path: '/auth',

@@ -8,11 +8,7 @@ import sendResponse from './shared/sendResponse';
 
 const app: Application = express();
 
-const allowedOrigins = [
-  'https://youngheart-frontend.vercel.app',
-  'http://localhost:3000',
-  'http://192.168.0.107:3000',
-];
+const allowedOrigins = ['https://youngheartbd.com', 'http://localhost:3000'];
 
 app.use(
   cors({
@@ -45,16 +41,12 @@ app.get('/', (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Yap Our youngheart server is running! 🚀',
+    message: 'Yap Our Babu khusi server is running! 🚀',
   });
 });
 
 app.use('/api/v1', routes);
 
-// const orderDetails = [
-//   { id: 101, name: 'Product A', quantity: 2, price: 50, discount: 20 },
-//   { id: 102, name: 'Product B', quantity: 1, price: 30, discount: 10 },
-// ];
 // const shippingCharge = 5;
 // const totalDiscount = orderDetails.reduce(
 //   (sum, item) => sum + (item.price * item.quantity * item.discount) / 100,

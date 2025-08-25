@@ -270,6 +270,68 @@ The API routes are grouped by feature/module. Below is a summary of the key rout
 | `GET` | `/custom-design/:id` | Get custom design by ID. |
 | `DELETE` | `/custom-design/:id` | Delete custom design by ID.
 
+## Real-time Notifications
+
+This backend now uses **Server-Sent Events (SSE)** instead of WebSockets for real-time notifications, making it compatible with Vercel deployment.
+
+### Changes Made
+
+1. **Replaced WebSocket with SSE**:
+
+   - Removed `ws` dependency
+   - Added `/api/sse` endpoint for real-time notifications
+   - Added `/api/notifications/check` endpoint for polling fallback
+
+2. **SSE Endpoint**: `/api/sse`
+
+   - Establishes persistent connection for real-time updates
+   - Sends notifications when orders are created
+   - Automatically handles client disconnections
+
+3. **Polling Fallback**: `/api/notifications/check`
+   - Fallback mechanism when SSE fails
+   - Returns notification status for polling clients
+
+### Frontend Integration
+
+The frontend automatically:
+
+- Attempts SSE connection first
+- Falls back to polling if SSE fails
+- Retries SSE connection with exponential backoff
+- Handles connection errors gracefully
+
+### Environment Variables
+
+Make sure your frontend has the correct SSE URL:
+
+- Production: `https://api.youngheartbd.com/api/sse`
+- Development: `http://localhost:5000/api/sse`
+
+### Benefits of SSE over WebSocket
+
+- ✅ **Vercel Compatible**: Works with serverless functions
+- ✅ **HTTP-based**: Uses standard HTTP protocol
+- ✅ **Automatic Reconnection**: Built-in reconnection handling
+- ✅ **Fallback Support**: Can fall back to polling
+- ✅ **Simpler Implementation**: No need for custom WebSocket handling
+
+### Testing
+
+1. Start the backend server
+2. Open the dashboard in your browser
+3. Check browser console for SSE connection status
+4. Create a new order to test real-time notifications
+
+### Troubleshooting
+
+If SSE fails:
+
+1. Check browser console for errors
+2. Verify the SSE endpoint is accessible
+3. The system will automatically fall back to polling
+4. Check network tab for failed requests
+
 ## Project Structure
 
 ```bash
