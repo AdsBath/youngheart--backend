@@ -1,30 +1,30 @@
 FROM node:20-alpine3.18 AS base
 WORKDIR /app
 
-# Copy package files first
-COPY package*.json ./
+# Install OS deps (optional, kept minimal)
+RUN apk add --no-cache openssl
 
-# Copy Prisma schema before npm install (needed for postinstall script)
+# Copy dependency manifests first for better layer caching
+COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies (including dev dependencies for prisma generate)
+# Install dependencies (dev deps included for build)
 RUN npm ci
 
-# Copy all remaining source code
+# Copy the rest of the source code
 COPY . .
 
-# Generate Prisma client before switching to app user
-RUN npx prisma generate
+# Build TypeScript and generate Prisma client (build script already runs prisma generate)
+RUN npm run build
 
-# Create app user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S app -u 1001
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs \
+	&& adduser -S app -u 1001 \
+	&& chown -R app:nodejs /app
 
-# Change ownership of the app directory to the app user
-RUN chown -R app:nodejs /app
-
-# Switch to app user
 USER app
 
+ENV NODE_ENV=production
 EXPOSE 5000
-CMD ["npm", "start"]
+# Use node directly for slightly faster startup
+CMD ["node", "dist/server.js"]
