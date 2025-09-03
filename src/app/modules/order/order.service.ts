@@ -455,12 +455,40 @@ const updateOrderStatus = async (
 };
 
 const deleteByIdFromDB = async (id: string): Promise<Order | null> => {
-  const result = await prisma.order.delete({
-    where: {
-      id,
-    },
-  });
-  return result;
+  try {
+    // Use transaction to ensure all related records are deleted properly
+    return await prisma.$transaction(async tx => {
+      // Delete related OrderItems first
+      await tx.orderItem.deleteMany({
+        where: { orderId: id },
+      });
+
+      // Delete related OrderCoupons if they exist
+      await tx.orderCoupon.deleteMany({
+        where: { orderId: id },
+      });
+
+      // Delete related OrderBundles if they exist
+      await tx.orderBundle.deleteMany({
+        where: { orderId: id },
+      });
+
+      // Delete related OrderNotifications if they exist
+      await tx.orderNotification.deleteMany({
+        where: { orderId: id },
+      });
+
+      // Now delete the Order
+      const result = await tx.order.delete({
+        where: { id },
+      });
+
+      return result;
+    });
+  } catch (error) {
+    console.log(error);
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to delete order');
+  }
 };
 
 const getMyOrder = async (sessionId: string) => {
